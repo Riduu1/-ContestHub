@@ -1,8 +1,14 @@
 import ContestCard from '../components/ContestCard'
 import SummaryCard from '../components/SummaryCard'
 import contests from '../data/contests'
+import useContestTracking from '../services/useContestTracking'
 
 function Dashboard() {
+  const {
+    trackedContests,
+    updateStatus,
+  } = useContestTracking()
+
   const upcomingContests = contests.filter(
     (contest) => contest.status === 'upcoming',
   )
@@ -10,6 +16,8 @@ function Dashboard() {
   const platforms = new Set(
     contests.map((contest) => contest.platform),
   )
+
+  const trackedCount = Object.keys(trackedContests).length
 
   return (
     <div className="space-y-8">
@@ -41,7 +49,7 @@ function Dashboard() {
 
         <SummaryCard
           label="Tracked Contests"
-          value={0}
+          value={trackedCount}
         />
 
         <SummaryCard
@@ -51,16 +59,14 @@ function Dashboard() {
       </section>
 
       <section className="space-y-4">
-        <div className="flex items-end justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              Upcoming Contests
-            </h2>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Upcoming Contests
+          </h2>
 
-            <p className="mt-1 text-sm text-gray-500">
-              Recently scheduled programming contests.
-            </p>
-          </div>
+          <p className="mt-1 text-sm text-gray-500">
+            Recently scheduled programming contests.
+          </p>
         </div>
 
         <div className="space-y-4">
@@ -68,6 +74,8 @@ function Dashboard() {
             <ContestCard
               key={contest.id}
               contest={contest}
+              trackingStatus={trackedContests[contest.id]}
+              onTrackingChange={updateStatus}
             />
           ))}
         </div>

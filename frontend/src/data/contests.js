@@ -43,6 +43,28 @@ const contests = [
     category: 'Weekly',
     status: 'upcoming',
   },
+  {
+    id: 5,
+    name: 'Codeforces Round #949',
+    platform: 'Codeforces',
+    start_time: '2026-08-20T20:00:00+06:00',
+    duration_minutes: 135,
+    url: 'https://codeforces.com/',
+    source_id: '949',
+    category: 'Div. 2',
+    status: 'past',
+  },
+  {
+    id: 6,
+    name: 'AtCoder Beginner Contest 419',
+    platform: 'AtCoder',
+    start_time: '2026-08-16T17:00:00+06:00',
+    duration_minutes: 100,
+    url: 'https://atcoder.jp/',
+    source_id: 'abc419',
+    category: 'Beginner',
+    status: 'past',
+  },
 ]
 
 export default contests

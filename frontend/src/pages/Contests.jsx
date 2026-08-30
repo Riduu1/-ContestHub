@@ -1,11 +1,16 @@
 import { useMemo, useState } from 'react'
 import ContestCard from '../components/ContestCard'
 import contests from '../data/contests'
+import useContestTracking from '../services/useContestTracking'
 
 function Contests() {
   const [search, setSearch] = useState('')
   const [platform, setPlatform] = useState('all')
   const [status, setStatus] = useState('all')
+  const {
+  trackedContests,
+  updateStatus,
+} = useContestTracking()
 
   const platforms = [
     ...new Set(contests.map((contest) => contest.platform)),
@@ -128,10 +133,12 @@ function Contests() {
         {filteredContests.length > 0 ? (
           <div className="space-y-4">
             {filteredContests.map((contest) => (
-              <ContestCard
-                key={contest.id}
-                contest={contest}
-              />
+             <ContestCard
+  key={contest.id}
+  contest={contest}
+  trackingStatus={trackedContests[contest.id]}
+  onTrackingChange={updateStatus}
+/>
             ))}
           </div>
         ) : (
