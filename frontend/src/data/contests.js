@@ -1,0 +1,48 @@
+const contests = [
+  {
+    id: 1,
+    name: 'Codeforces Round #950',
+    platform: 'Codeforces',
+    start_time: '2026-09-02T20:00:00+06:00',
+    duration_minutes: 135,
+    url: 'https://codeforces.com/',
+    source_id: '950',
+    category: 'Div. 2',
+    status: 'upcoming',
+  },
+  {
+    id: 2,
+    name: 'AtCoder Beginner Contest 420',
+    platform: 'AtCoder',
+    start_time: '2026-09-03T17:00:00+06:00',
+    duration_minutes: 100,
+    url: 'https://atcoder.jp/',
+    source_id: 'abc420',
+    category: 'Beginner',
+    status: 'upcoming',
+  },
+  {
+    id: 3,
+    name: 'CodeChef Starters 200',
+    platform: 'CodeChef',
+    start_time: '2026-09-04T20:30:00+06:00',
+    duration_minutes: 120,
+    url: 'https://www.codechef.com/',
+    source_id: 'starters200',
+    category: 'Starters',
+    status: 'upcoming',
+  },
+  {
+    id: 4,
+    name: 'LeetCode Weekly Contest 470',
+    platform: 'LeetCode',
+    start_time: '2026-09-06T08:30:00+06:00',
+    duration_minutes: 90,
+    url: 'https://leetcode.com/',
+    source_id: 'weekly470',
+    category: 'Weekly',
+    status: 'upcoming',
+  },
+]
+
+export default contests
