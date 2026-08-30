@@ -1,16 +1,32 @@
 # ContestHub
 
-Competitive Programming Contest Aggregator.
+### Competitive Programming Contest Aggregator
 
-ContestHub is a Python-based application designed to collect, normalize,
-organize, and track competitive programming contests from multiple platforms.
+ContestHub is a web application that brings competitive programming contests from multiple platforms into one organized place.
 
-## Planned Technologies
+The project is being developed as a practical Python backend project, with a React frontend, focusing on data collection, normalization, persistence, REST APIs, and automated synchronization.
 
-- Python
-- FastAPI
-- PostgreSQL
-- SQLAlchemy
-- Pytest
-- Docker
-- React / Next.js
+---
+
+## 🚀 Project Overview
+
+Competitive programming contests are distributed across different platforms, making it inconvenient to keep track of upcoming events.
+
+ContestHub aims to solve this by collecting contest information from multiple competitive programming platforms and presenting it through a unified interface.
+
+The planned data flow is:
+
+```text
+Contest Platforms
+       ↓
+Data Collectors
+       ↓
+Data Normalization
+       ↓
+Deduplication
+       ↓
+PostgreSQL
+       ↓
+FastAPI
+       ↓
+React Dashboard
