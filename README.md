@@ -2,13 +2,17 @@
 
 ### Competitive Programming Contest Aggregator
 
-ContestHub is a web application that brings competitive programming contests from multiple platforms into one organized place.
+**ContestHub** is a web application that brings competitive programming contests from multiple platforms into one organized place.
 
-The project is being developed as a practical Python backend project, with a React frontend, focusing on data collection, normalization, persistence, REST APIs, and automated synchronization.
+The project is being developed as a practical Python backend project with a React frontend, focusing on data collection, normalization, persistence, REST APIs, and automated synchronization.
 
----
+## 🚀 Live Demo
 
-## 🚀 Project Overview
+The React frontend is currently deployed and available online.
+
+**Frontend:**  https://contest-hub-opal.vercel.app/
+
+## 📌 Project Overview
 
 Competitive programming contests are distributed across different platforms, making it inconvenient to keep track of upcoming events.
 
