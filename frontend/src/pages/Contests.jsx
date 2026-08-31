@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import ContestCard from '../components/ContestCard'
-import contests from '../data/contests'
+import { fetchContests } from '../services/api'
 import useContestTracking from '../services/useContestTracking'
 
 function Contests() {
@@ -8,36 +8,62 @@ function Contests() {
   const [platform, setPlatform] = useState('all')
   const [status, setStatus] = useState('all')
 
+  const [contests, setContests] = useState([])
+  const [platforms, setPlatforms] = useState([])
+
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
   const {
     trackedContests,
     updateStatus,
   } = useContestTracking()
 
-  const platforms = [
-    ...new Set(contests.map((contest) => contest.platform)),
-  ]
+  // Load contests from FastAPI
+  useEffect(() => {
+    async function loadContests() {
+      try {
+        setLoading(true)
+        setError('')
 
-  const filteredContests = useMemo(() => {
-    return contests.filter((contest) => {
-      const matchesSearch =
-        contest.name
-          .toLowerCase()
-          .includes(search.toLowerCase())
+        const data = await fetchContests({
+          search: search || undefined,
+          platform:
+            platform !== 'all'
+              ? platform
+              : undefined,
+          status:
+            status !== 'all'
+              ? status
+              : undefined,
+          limit: 100,
+        })
 
-      const matchesPlatform =
-        platform === 'all' ||
-        contest.platform === platform
+        setContests(data)
 
-      const matchesStatus =
-        status === 'all' ||
-        contest.status === status
+        // Build platform list from returned data
+        setPlatforms((currentPlatforms) => {
+          const newPlatforms = [
+            ...new Set(
+              data.map((contest) => contest.platform)
+            ),
+          ]
 
-      return (
-        matchesSearch &&
-        matchesPlatform &&
-        matchesStatus
-      )
-    })
+          return newPlatforms.length > 0
+            ? newPlatforms
+            : currentPlatforms
+        })
+      } catch (err) {
+        console.error(err)
+        setError(
+          'Unable to load contests from the server.'
+        )
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadContests()
   }, [search, platform, status])
 
   const clearFilters = () => {
@@ -74,6 +100,13 @@ function Contests() {
           </p>
         </div>
       </section>
+
+      {/* Error */}
+      {error && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
+          {error}
+        </div>
+      )}
 
       {/* Filters */}
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
@@ -173,7 +206,8 @@ function Contests() {
             >
               <option value="all">All Statuses</option>
               <option value="upcoming">Upcoming</option>
-              <option value="past">Past</option>
+              <option value="ongoing">Ongoing</option>
+              <option value="finished">Finished</option>
             </select>
           </div>
         </div>
@@ -196,17 +230,31 @@ function Contests() {
             </h2>
           </div>
 
-          <div className="rounded-full bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-600">
-            {filteredContests.length}{' '}
-            {filteredContests.length === 1
-              ? 'contest'
-              : 'contests'}
-          </div>
+          {!loading && (
+            <div className="rounded-full bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-600">
+              {contests.length}{' '}
+              {contests.length === 1
+                ? 'contest'
+                : 'contests'}
+            </div>
+          )}
         </div>
 
-        {filteredContests.length > 0 ? (
+        {/* Loading */}
+        {loading && (
+          <div className="rounded-2xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
+            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+
+            <p className="mt-4 text-sm font-medium text-slate-500">
+              Loading contests...
+            </p>
+          </div>
+        )}
+
+        {/* Results */}
+        {!loading && contests.length > 0 && (
           <div className="space-y-4">
-            {filteredContests.map((contest) => (
+            {contests.map((contest) => (
               <ContestCard
                 key={contest.id}
                 contest={contest}
@@ -217,7 +265,10 @@ function Contests() {
               />
             ))}
           </div>
-        ) : (
+        )}
+
+        {/* Empty */}
+        {!loading && contests.length === 0 && !error && (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center shadow-sm">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-2xl">
               ⌕
