@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
+from database import SessionLocal, engine
+from database_models import Base, ContestDB
 
 from database import SessionLocal
 from database_models import ContestDB
@@ -11,6 +13,7 @@ app = FastAPI(
     description="Competitive programming contest aggregator API",
     version="1.0.0",
 )
+Base.metadata.create_all(bind=engine)
 
 
 # CORS
