@@ -1,11 +1,9 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
+
 from database import SessionLocal, engine
 from database_models import Base, ContestDB
-
-from database import SessionLocal
-from database_models import ContestDB
 
 
 app = FastAPI(
@@ -13,6 +11,8 @@ app = FastAPI(
     description="Competitive programming contest aggregator API",
     version="1.0.0",
 )
+
+# Create database tables automatically
 Base.metadata.create_all(bind=engine)
 
 
@@ -20,10 +20,10 @@ Base.metadata.create_all(bind=engine)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "https://content-hub-opa1.vercel.app",
-],
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "https://contest-hub-opal.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -69,17 +69,15 @@ def get_contests(
 
         # Ordering
         if status == "finished":
-            # Recently finished → older finished
             query = query.order_by(
                 ContestDB.start_time.desc()
             )
         else:
-            # Upcoming/ongoing → earliest first
             query = query.order_by(
                 ContestDB.start_time.asc()
             )
 
-        # Limit results
+        # Limit
         query = query.limit(limit)
 
         contests = db.scalars(query).all()
