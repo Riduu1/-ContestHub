@@ -4,6 +4,17 @@ from sqlalchemy import select
 
 from database import SessionLocal, engine
 from database_models import Base, ContestDB
+from repository import save_contest
+
+from app.collectors.codeforces import (
+    fetch_codeforces_contests,
+    normalize_codeforces_contest,
+)
+
+from app.collectors.codechef import (
+    fetch_codechef_contests,
+    normalize_codechef_contest,
+)
 
 
 app = FastAPI(
@@ -11,6 +22,7 @@ app = FastAPI(
     description="Competitive programming contest aggregator API",
     version="1.0.0",
 )
+
 
 # Create database tables automatically
 Base.metadata.create_all(bind=engine)
@@ -69,15 +81,16 @@ def get_contests(
 
         # Ordering
         if status == "finished":
+            # Recently finished → older finished
             query = query.order_by(
                 ContestDB.start_time.desc()
             )
         else:
+            # Upcoming / ongoing → earliest first
             query = query.order_by(
                 ContestDB.start_time.asc()
             )
 
-        # Limit
         query = query.limit(limit)
 
         contests = db.scalars(query).all()
@@ -96,6 +109,38 @@ def get_contests(
             }
             for contest in contests
         ]
+
+    finally:
+        db.close()
+
+
+# Synchronize contests from Codeforces and CodeChef
+@app.post("/api/sync")
+def sync_contests():
+    db = SessionLocal()
+
+    try:
+        codeforces_raw = fetch_codeforces_contests()
+        codechef_raw = fetch_codechef_contests()
+
+        codeforces_count = 0
+        codechef_count = 0
+
+        for raw in codeforces_raw:
+            contest = normalize_codeforces_contest(raw)
+            save_contest(db, contest)
+            codeforces_count += 1
+
+        for raw in codechef_raw:
+            contest = normalize_codechef_contest(raw)
+            save_contest(db, contest)
+            codechef_count += 1
+
+        return {
+            "message": "Contest synchronization successful",
+            "codeforces": codeforces_count,
+            "codechef": codechef_count,
+        }
 
     finally:
         db.close()
