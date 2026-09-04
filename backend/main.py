@@ -16,6 +16,11 @@ from app.collectors.codechef import (
     normalize_codechef_contest,
 )
 
+from app.collectors.toph import (
+    fetch_toph_contests,
+    normalize_toph_contest,
+)
+
 
 app = FastAPI(
     title="ContestHub API",
@@ -114,7 +119,7 @@ def get_contests(
         db.close()
 
 
-# Synchronize contests from Codeforces and CodeChef
+# Synchronize contests from Codeforces, CodeChef, and Toph
 @app.post("/api/sync")
 def sync_contests():
     db = SessionLocal()
@@ -122,24 +127,47 @@ def sync_contests():
     try:
         codeforces_raw = fetch_codeforces_contests()
         codechef_raw = fetch_codechef_contests()
+        toph_raw = fetch_toph_contests()
 
-        codeforces_count = 0
-        codechef_count = 0
+        stats = {
+            "codeforces": {
+                "new": 0,
+                "changed": 0,
+                "unchanged": 0,
+            },
+            "codechef": {
+                "new": 0,
+                "changed": 0,
+                "unchanged": 0,
+            },
+            "toph": {
+                "new": 0,
+                "changed": 0,
+                "unchanged": 0,
+            },
+        }
 
+        # Process Codeforces
         for raw in codeforces_raw:
             contest = normalize_codeforces_contest(raw)
-            save_contest(db, contest)
-            codeforces_count += 1
+            result = save_contest(db, contest)
+            stats["codeforces"][result] += 1
 
+        # Process CodeChef
         for raw in codechef_raw:
             contest = normalize_codechef_contest(raw)
-            save_contest(db, contest)
-            codechef_count += 1
+            result = save_contest(db, contest)
+            stats["codechef"][result] += 1
+
+        # Process Toph
+        for raw in toph_raw:
+            contest = normalize_toph_contest(raw)
+            result = save_contest(db, contest)
+            stats["toph"][result] += 1
 
         return {
             "message": "Contest synchronization successful",
-            "codeforces": codeforces_count,
-            "codechef": codechef_count,
+            "stats": stats,
         }
 
     finally:
