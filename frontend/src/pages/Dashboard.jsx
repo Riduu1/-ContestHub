@@ -18,10 +18,11 @@ const [error, setError] = useState('')
         setError('')
 
         const data = await fetchContests({ limit: 500 })
+        
 
 const upcomingData = await fetchContests({
   status: 'upcoming',
-  limit: 10,
+  limit: 100,
 })
 
 setContests(data.contests)
@@ -42,8 +43,7 @@ setUpcomingContests(upcomingData.contests)
 
   const todayContests = useMemo(() => {
     const today = new Date()
-
-    return contests.filter((contest) => {
+return upcomingContests.filter((contest) => {
       const contestDate = new Date(contest.start_time)
 
       return (
@@ -52,7 +52,7 @@ setUpcomingContests(upcomingData.contests)
         contestDate.getDate() === today.getDate()
       )
     })
-  }, [contests])
+  }, [upcomingContests])
 
   const platforms = useMemo(() => {
     return new Set(
