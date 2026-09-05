@@ -1,14 +1,59 @@
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import contests from '../data/contests'
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
 
 function ContestDetails() {
   const { id } = useParams()
 
-  const contest = contests.find(
-    (item) => item.id === Number(id),
-  )
+  const [contest, setContest] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  if (!contest) {
+  useEffect(() => {
+    async function loadContest() {
+      try {
+        setLoading(true)
+        setError('')
+
+        const response = await fetch(
+          `${API_BASE_URL}/api/contests/${id}`,
+        )
+
+        if (!response.ok) {
+          throw new Error('Contest not found')
+        }
+
+        const data = await response.json()
+
+        if (data.error) {
+          throw new Error(data.error)
+        }
+
+        setContest(data)
+      } catch (err) {
+        console.error(err)
+        setError('Unable to load contest details.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadContest()
+  }, [id])
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="text-sm font-medium text-slate-500">
+          Loading contest details...
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !contest) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm sm:p-10">
@@ -51,7 +96,8 @@ function ContestDetails() {
 
   const statusStyles = {
     upcoming: 'bg-emerald-50 text-emerald-700',
-    past: 'bg-slate-100 text-slate-600',
+    ongoing: 'bg-blue-50 text-blue-700',
+    finished: 'bg-slate-100 text-slate-600',
   }
 
   const statusStyle =
@@ -207,7 +253,17 @@ function ContestDetails() {
             </dt>
 
             <dd className="max-w-xl truncate text-sm text-slate-700">
-              {contest.url}
+              <div>
+
+  <a
+    href={contest.url}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="mt-1 inline-block text-indigo-600 hover:underline break-all"
+  >
+    {contest.url}
+  </a>
+</div>
             </dd>
           </div>
         </dl>

@@ -6,18 +6,19 @@ import useContestTracking from '../services/useContestTracking'
 function Contests() {
   const [search, setSearch] = useState('')
   const [platform, setPlatform] = useState('all')
-  const [status, setStatus] = useState('all')
+  const [status, setStatus] = useState('upcoming')
 
   const [contests, setContests] = useState([])
-  const [platforms, setPlatforms] = useState([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const {
-    trackedContests,
-    updateStatus,
-  } = useContestTracking()
+  const contestsPerPage = 100
+
+  const { trackedContests, updateStatus } =
+    useContestTracking()
 
   // Load contests from FastAPI
   useEffect(() => {
@@ -27,32 +28,17 @@ function Contests() {
         setError('')
 
         const data = await fetchContests({
-          search: search || undefined,
           platform:
-            platform !== 'all'
-              ? platform
-              : undefined,
+            platform === 'all' ? undefined : platform,
           status:
-            status !== 'all'
-              ? status
-              : undefined,
-          limit: 100,
+            status === 'all' ? undefined : status,
+          search,
+          limit: contestsPerPage,
+          offset: (page - 1) * contestsPerPage,
         })
 
-        setContests(data)
-
-        // Build platform list from returned data
-        setPlatforms((currentPlatforms) => {
-          const newPlatforms = [
-            ...new Set(
-              data.map((contest) => contest.platform)
-            ),
-          ]
-
-          return newPlatforms.length > 0
-            ? newPlatforms
-            : currentPlatforms
-        })
+        setContests(data.contests || [])
+        setTotal(data.total || 0)
       } catch (err) {
         console.error(err)
         setError(
@@ -64,18 +50,28 @@ function Contests() {
     }
 
     loadContests()
+  }, [search, platform, status, page])
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1)
   }, [search, platform, status])
 
   const clearFilters = () => {
     setSearch('')
     setPlatform('all')
     setStatus('all')
+    setPage(1)
   }
 
   const hasActiveFilters =
     search !== '' ||
     platform !== 'all' ||
     status !== 'all'
+
+  const totalPages = Math.ceil(
+    total / contestsPerPage
+  )
 
   return (
     <div className="space-y-10">
@@ -178,12 +174,9 @@ function Contests() {
               className="w-full cursor-pointer rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
             >
               <option value="all">All Platforms</option>
-
-              {platforms.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
+              <option value="Codeforces">Codeforces</option>
+              <option value="CodeChef">CodeChef</option>
+              <option value="Toph">Toph</option>
             </select>
           </div>
 
@@ -264,6 +257,51 @@ function Contests() {
                 onTrackingChange={updateStatus}
               />
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && totalPages > 1 && (
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                setPage((current) => current - 1)
+              }
+              disabled={page === 1}
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              ← Previous
+            </button>
+
+            {Array.from(
+              { length: totalPages },
+              (_, index) => index + 1,
+            ).map((pageNumber) => (
+              <button
+                key={pageNumber}
+                type="button"
+                onClick={() => setPage(pageNumber)}
+                className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
+                  page === pageNumber
+                    ? 'bg-slate-950 text-white'
+                    : 'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                {pageNumber}
+              </button>
+            ))}
+
+            <button
+              type="button"
+              onClick={() =>
+                setPage((current) => current + 1)
+              }
+              disabled={page === totalPages}
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Next →
+            </button>
           </div>
         )}
 

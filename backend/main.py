@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from database import SessionLocal, engine
 from database_models import Base, ContestDB
@@ -60,6 +60,7 @@ def get_contests(
     platform: str | None = Query(default=None),
     status: str | None = Query(default=None),
     limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
 ):
     db = SessionLocal()
 
@@ -96,24 +97,61 @@ def get_contests(
                 ContestDB.start_time.asc()
             )
 
-        query = query.limit(limit)
+        # Count total matching contests before pagination
+        total = db.scalar(
+            select(func.count()).select_from(query.subquery())
+        )
+
+        # Pagination
+        query = query.offset(offset).limit(limit)
 
         contests = db.scalars(query).all()
 
-        return [
-            {
-                "id": contest.id,
-                "name": contest.name,
-                "platform": contest.platform,
-                "start_time": contest.start_time,
-                "duration_minutes": contest.duration_minutes,
-                "url": contest.url,
-                "source_id": contest.source_id,
-                "category": contest.category,
-                "status": contest.status,
+        return {
+            "contests": [
+                {
+                    "id": contest.id,
+                    "name": contest.name,
+                    "platform": contest.platform,
+                    "start_time": contest.start_time,
+                    "duration_minutes": contest.duration_minutes,
+                    "url": contest.url,
+                    "source_id": contest.source_id,
+                    "category": contest.category,
+                    "status": contest.status,
+                }
+                for contest in contests
+            ],
+            "total": total,
+        }
+
+    finally:
+        db.close()
+
+
+@app.get("/api/contests/{contest_id}")
+def get_contest(contest_id: int):
+    db = SessionLocal()
+
+    try:
+        contest = db.get(ContestDB, contest_id)
+
+        if not contest:
+            return {
+                "error": "Contest not found"
             }
-            for contest in contests
-        ]
+
+        return {
+            "id": contest.id,
+            "name": contest.name,
+            "platform": contest.platform,
+            "start_time": contest.start_time,
+            "duration_minutes": contest.duration_minutes,
+            "url": contest.url,
+            "source_id": contest.source_id,
+            "category": contest.category,
+            "status": contest.status,
+        }
 
     finally:
         db.close()

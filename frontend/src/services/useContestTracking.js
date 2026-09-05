@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   getTrackedContests,
   saveTrackedContests,
@@ -6,8 +6,27 @@ import {
 
 function useContestTracking() {
   const [trackedContests, setTrackedContests] = useState(
-    getTrackedContests,
+    getTrackedContests()
   )
+
+  // Keep tracking state synchronized between pages/components
+  useEffect(() => {
+    const handleTrackingChange = () => {
+      setTrackedContests(getTrackedContests())
+    }
+
+    window.addEventListener(
+      'contest-tracking-updated',
+      handleTrackingChange
+    )
+
+    return () => {
+      window.removeEventListener(
+        'contest-tracking-updated',
+        handleTrackingChange
+      )
+    }
+  }, [])
 
   const updateStatus = (contestId, status) => {
     const updated = {
@@ -17,6 +36,10 @@ function useContestTracking() {
 
     setTrackedContests(updated)
     saveTrackedContests(updated)
+
+    window.dispatchEvent(
+      new Event('contest-tracking-updated')
+    )
   }
 
   const removeTracking = (contestId) => {
@@ -26,6 +49,10 @@ function useContestTracking() {
 
     setTrackedContests(updated)
     saveTrackedContests(updated)
+
+    window.dispatchEvent(
+      new Event('contest-tracking-updated')
+    )
   }
 
   return {

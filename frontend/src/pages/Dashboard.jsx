@@ -5,38 +5,38 @@ import { fetchContests } from '../services/api'
 
 function Dashboard() {
   const [contests, setContests] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+const [upcomingContests, setUpcomingContests] = useState([])
+const [loading, setLoading] = useState(true)
+const [error, setError] = useState('')
 
   const { trackedContests, updateStatus } = useContestTracking()
 
-  useEffect(() => {
-    const loadContests = async () => {
-      try {
-        setLoading(true)
-        setError('')
+useEffect(() => {
+  const loadContests = async () => {
+    try {
+      setLoading(true)
+      setError('')
 
-        const data = await fetchContests({
-          limit: 500,
-        })
+      const data = await fetchContests({ limit: 500 })
 
-        setContests(data)
-      } catch (err) {
-        console.error(err)
-        setError('Failed to load contests.')
-      } finally {
-        setLoading(false)
-      }
+      const upcomingData = await fetchContests({
+        status: 'upcoming',
+        limit: 10,
+      })
+
+      setContests(data.contests || [])
+      setUpcomingContests(upcomingData.contests || [])
+    } catch (err) {
+      console.error(err)
+      setError('Failed to load contests.')
+    } finally {
+      setLoading(false)
     }
+  }
 
-    loadContests()
-  }, [])
-
-  const upcomingContests = useMemo(() => {
-    return contests.filter(
-      (contest) => contest.status === 'upcoming',
-    )
-  }, [contests])
+  loadContests()
+}, [])
+  
 
   const todayContests = useMemo(() => {
     const today = new Date()
