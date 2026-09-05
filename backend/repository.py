@@ -1,3 +1,6 @@
+import hashlib
+import json
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -5,7 +8,34 @@ from database_models import ContestDB
 from models import Contest
 
 
+def generate_content_hash(contest: Contest) -> str:
+    contest_data = {
+        "name": contest.name,
+        "platform": contest.platform,
+        "start_time": contest.start_time.isoformat(),
+        "duration_minutes": contest.duration_minutes,
+        "url": contest.url,
+        "source_id": contest.source_id,
+        "category": contest.category,
+        "status": (
+            contest.status.value
+            if hasattr(contest.status, "value")
+            else contest.status
+        ),
+    }
+
+    content = json.dumps(
+        contest_data,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+
 def save_contest(db: Session, contest: Contest):
+    new_hash = generate_content_hash(contest)
+
     existing = db.scalar(
         select(ContestDB).where(
             ContestDB.platform == contest.platform,
@@ -28,6 +58,7 @@ def save_contest(db: Session, contest: Contest):
                 if hasattr(contest.status, "value")
                 else contest.status
             ),
+            content_hash=new_hash,
         )
 
         db.add(contest_db)
@@ -43,18 +74,8 @@ def save_contest(db: Session, contest: Contest):
         else contest.status
     )
 
-    # Check whether any important data has changed
-    changed = (
-        existing.name != contest.name
-        or existing.start_time != contest.start_time
-        or existing.duration_minutes != contest.duration_minutes
-        or existing.url != contest.url
-        or existing.category != contest.category
-        or existing.status != new_status
-    )
-
-    # Existing contest with no changes
-    if not changed:
+    # Check whether contest data has changed
+    if existing.content_hash == new_hash:
         return "unchanged"
 
     # Update changed contest
@@ -64,6 +85,7 @@ def save_contest(db: Session, contest: Contest):
     existing.url = contest.url
     existing.category = contest.category
     existing.status = new_status
+    existing.content_hash = new_hash
 
     db.commit()
 
