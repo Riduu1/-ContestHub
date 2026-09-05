@@ -36,3 +36,44 @@ PostgreSQL
 FastAPI
        ↓
 React Frontend
+
+
+Key Features
+Collect contest information from multiple competitive programming platforms
+Normalize different data formats into a unified contest schema
+Detect changes in existing contest information
+Avoid unnecessary database updates when data has not changed
+Store contest data in PostgreSQL
+Provide contest data through REST APIs using FastAPI
+Display upcoming, ongoing, and finished contests through a React interface
+Filter and search contests by platform and other attributes
+Automatically synchronize contest data
+Tech Stack
+Backend
+Python
+FastAPI
+SQLAlchemy
+PostgreSQL
+Frontend
+React
+Vite
+Tailwind CSS
+Data Collection
+Platform-specific collectors
+API-based data collection
+Web scraping where required
+Data Processing
+Different platforms provide contest information in different formats. ContestHub converts these responses into a unified schema containing fields such as:
+name
+platform
+start_time
+duration_minutes
+url
+source_id
+category
+status
+
+Before storing the data, the system checks existing contests and detects whether their important information has changed. This helps reduce unnecessary database updates during repeated synchronization.
+Current Status
+ContestHub is currently deployed with the React frontend and FastAPI backend. Contest data from multiple platforms can be synchronized and stored in the production PostgreSQL database.
+The project is being developed incrementally, with planned improvements around automated synchronization, efficient change detection, contest tracking, and notification features.
