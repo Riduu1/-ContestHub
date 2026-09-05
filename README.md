@@ -2,35 +2,37 @@
 
 ### Competitive Programming Contest Aggregator
 
-**ContestHub** is a web application that brings competitive programming contests from multiple platforms into one organized place.
+ContestHub is a web application that collects competitive programming contest data from multiple platforms and presents it in one place.
 
-The project is being developed as a practical Python backend project with a React frontend, focusing on data collection, normalization, persistence, REST APIs, and automated synchronization.
+The project is built with a Python FastAPI backend, PostgreSQL database, and React frontend. The main focus is automated data collection, data normalization, efficient change detection, and synchronization of contest information.
 
-## 🚀 Live Demo
+## Live Demo
 
-The React frontend is currently deployed and available online.
+The React frontend is deployed and available online:
 
-**Frontend:**  https://contest-hub-opal.vercel.app/
+Frontend: https://contest-hub-opal.vercel.app/
 
-## 📌 Project Overview
+Backend API: https://contesthub-tg79.onrender.com/
 
-Competitive programming contests are distributed across different platforms, making it inconvenient to keep track of upcoming events.
+## Project Overview
 
-ContestHub aims to solve this by collecting contest information from multiple competitive programming platforms and presenting it through a unified interface.
+Competitive programming contests are spread across different platforms, making it difficult to keep track of them from a single place.
 
-The planned data flow is:
+ContestHub collects contest information from multiple competitive programming platforms, converts data from different sources into a common format, detects changes in existing data, and stores the results in PostgreSQL.
+
+The overall data flow is:
 
 ```text
 Contest Platforms
        ↓
-Data Collectors
+Data Collection / Scraping
        ↓
 Data Normalization
        ↓
-Deduplication
+Change Detection & Deduplication
        ↓
 PostgreSQL
        ↓
 FastAPI
        ↓
-React Dashboard
+React Frontend
