@@ -11,31 +11,33 @@ const [error, setError] = useState('')
 
   const { trackedContests, updateStatus } = useContestTracking()
 
-useEffect(() => {
-  const loadContests = async () => {
-    try {
-      setLoading(true)
-      setError('')
+  useEffect(() => {
+    const loadContests = async () => {
+      try {
+        setLoading(true)
+        setError('')
 
-      const data = await fetchContests({ limit: 500 })
+        const data = await fetchContests({ limit: 500 })
 
-      const upcomingData = await fetchContests({
-        status: 'upcoming',
-        limit: 10,
-      })
+const upcomingData = await fetchContests({
+  status: 'upcoming',
+  limit: 10,
+})
 
-      setContests(data.contests || [])
-      setUpcomingContests(upcomingData.contests || [])
-    } catch (err) {
-      console.error(err)
-      setError('Failed to load contests.')
-    } finally {
-      setLoading(false)
+setContests(data.contests)
+setUpcomingContests(upcomingData.contests)
+
+      } catch (err) {
+        console.error(err)
+        setError('Failed to load contests.')
+      } finally {
+        setLoading(false)
+      }
     }
-  }
 
-  loadContests()
-}, [])
+    loadContests()
+  }, [])
+
   
 
   const todayContests = useMemo(() => {
@@ -204,7 +206,7 @@ useEffect(() => {
                   </p>
 
                   <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
-                    {platforms.size}
+                    3
                   </p>
                 </div>
 
